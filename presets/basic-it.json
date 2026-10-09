@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "operations": [
+    {"kind": "setting", "value": "show_file_extensions"}
+  ],
+  "unattended": {
+    "locale": "it-IT",
+    "computer_name": "WINIMAGE",
+    "time_zone": "W. Europe Standard Time"
+  }
+}

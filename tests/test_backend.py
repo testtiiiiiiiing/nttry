@@ -62,6 +62,24 @@ class ImageToolsTests(unittest.TestCase):
         self.tools.export(esd, 1, output)
         self.tools.dism.assert_called_with("/Export-Image", f"/SourceImageFile:{esd}", "/SourceIndex:1", f"/DestinationImageFile:{output}", "/Compress:max", "/CheckIntegrity")
 
+    def test_split_image_metadata_and_export_reference_all_chunks(self):
+        swm = self.root / 'install.swm'
+        swm.write_bytes(b'fixture')
+        self.tools.wimlib = 'wimlib-imagex.exe'
+        def execute(args):
+            xmlarg = next((a for a in args if str(a).startswith('--extract-xml=')), None)
+            if xmlarg:
+                from pathlib import Path
+                Path(xmlarg.split('=', 1)[1]).write_text('<WIM><IMAGE INDEX="3"><NAME>Windows Pro</NAME><WINDOWS><ARCH>9</ARCH></WINDOWS></IMAGE></WIM>')
+            return ''
+        self.tools.run = Mock(side_effect=execute)
+        self.assertIn('Architecture : x64', self.tools.info(swm))
+        self.tools.export(swm, 3, self.root / 'copy.wim')
+        args = self.tools.run.call_args.args[0]
+        self.assertIn('--ref=' + str(self.root / 'install*.swm'), args)
+        self.assertIn('--check', args)
+        self.tools.dism.assert_not_called()
+
     def test_command_arguments_are_not_executed_by_shell(self):
         runner = Mock(return_value=subprocess.CompletedProcess([], 0, "success"))
         tools = ImageTools(emit=lambda text: None, runner=runner)

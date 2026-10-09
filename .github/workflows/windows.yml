@@ -1,0 +1,27 @@
+name: Windows build
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Build Windows desktop executable
+        run: |
+          python -m pip install pyinstaller==6.16.0
+          python -m PyInstaller --noconfirm --clean --onefile --windowed --uac-admin --name WinImage-Studio desktop.py
+      - name: Upload portable application
+        uses: actions/upload-artifact@v4
+        with:
+          name: WinImage-Studio-Windows
+          path: dist/WinImage-Studio.exe
+          if-no-files-found: error
