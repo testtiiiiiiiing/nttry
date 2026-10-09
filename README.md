@@ -1,6 +1,6 @@
-# WinImage Studio 2
+# WinImage Studio 3
 
-Editor desktop di **ISO di installazione Windows** con DISM. Questa versione sostituisce la precedente interfaccia per singoli comandi con un progetto completo: **ISO originale → edizione → personalizzazioni → nuova ISO avviabile**. L'originale non viene modificato e non è necessario sostituire manualmente `install.wim` nella ISO.
+Editor desktop di **ISO di installazione Windows** con DISM. La nuova interfaccia usa una barra laterale, un catalogo componenti interattivo e un progetto completo: **ISO originale → edizione → personalizzazioni → nuova ISO avviabile**. L'originale non viene modificato e non è necessario sostituire manualmente `install.wim` nella ISO.
 
 Le funzioni richieste sono confrontate, una per una, in [docs/features.md](docs/features.md). Il programma ha codice e interfaccia originali: non è NTLite, non usa il suo motore proprietario e non ha ancora tutte le sue funzioni.
 
@@ -16,13 +16,25 @@ Da GitHub: **Code → Download ZIP**, estrarre l'archivio.
 
 ## Modifica di una ISO
 
-1. **Sorgente ISO:** scegliere l'originale e una **nuova** cartella progetto; premere **Estrai ISO e leggi edizioni**. Il supporto deve contenere `sources/boot.wim` e una sorgente `install.wim`, `install.esd` oppure `install.swm` con tutti i suoi segmenti.
+1. **ISO e progetto:** scegliere l'originale e una **nuova** cartella progetto; premere **Estrai ISO**. Il supporto deve contenere `sources/boot.wim` e una sorgente `install.wim`, `install.esd` oppure `install.swm` con tutti i suoi segmenti.
 2. Scegliere l'edizione e **Carica edizione**. Il programma la esporta in una copia WIM e la monta. La ISO risultante conterrà **una sola edizione**, selezionata qui.
-3. **Componenti:** selezionare una categoria e **Leggi dall'immagine**. Selezionare gli elementi da abilitare, disabilitare o rimuovere. Le operazioni entrano nella coda e non vengono applicate subito.
+3. **Componenti:** il catalogo viene letto automaticamente dopo il montaggio. Filtrare per tipo, cercare un nome oppure premere **Aggiorna elenco**. Le intestazioni ordinano le righe; **Raggruppa per tipo** riunisce funzionalita, app, driver e tipi di pacchetti. **Disabilita** cambia subito lo stato previsto, mentre **Rimuovi** nasconde la riga. Le modifiche restano in attesa fino ad **Applica**. **Stato immagine** mantiene distinto il punto di partenza dalla scelta prevista. Abilita/Disabilita sono disponibili per le funzionalita; gli altri tipi si rimuovono.
 4. **Integrazione:** aggiungere driver INF, aggiornamenti CAB/MSU, installer/script post-setup, piani energetici o pulizia componenti. Gli aggiornamenti sono applicati nell'ordine della coda: stabilire dipendenze e compatibilità dalla documentazione Microsoft. I driver di questo PC possono essere esportati e aggiunti alla coda senza modificare il Windows in esecuzione.
 5. **Impostazioni:** scegliere criteri o valori di registro offline e modalità di avvio servizi. Le preferenze del profilo Default si applicano ai nuovi utenti. L'effetto dei criteri dipende dall'edizione Windows. Le attività pianificate sono gestite **dopo l'installazione**, tramite `schtasks`, non cancellando direttamente il database offline.
 6. **Installazione:** opzionalmente generare `autounattend.xml` o importare un answer file proprio. Il generatore configura lingua, nome e fuso orario; non automatizza account e OOBE. **Il partizionamento GPT/UEFI opzionale cancella il disco esplicitamente indicato quando la ISO viene installata.** Prevede EFI 260 MiB, MSR 16 MiB e Windows nello spazio rimanente, senza partizione Recovery dedicata. Non usarlo per installazioni BIOS/MBR. Il programma richiede una conferma testuale e una seconda conferma prima di applicare il piano. Senza questa opzione, il disco viene scelto interattivamente durante Setup.
-7. **Applica e ISO:** revisionare/rimuovere/riordinare la coda, salvare eventualmente un preset, quindi **Applica piano e salva WIM**. Dopo lo smontaggio, scegliere un nuovo file ISO fuori dal progetto e premere **Crea ISO avviabile**. Il programma conserva l'immagine iniziale del supporto nel progetto, esporta un WIM ottimizzato e ricostruisce la ISO con avvio BIOS/UEFI. La ISO finale viene resa disponibile solo dopo il successo di `oscdimg`.
+7. **Modifiche e ISO:** revisionare/rimuovere/riordinare la coda, salvare eventualmente un preset, quindi **Applica e salva immagine**. Dopo lo smontaggio, scegliere un nuovo file ISO fuori dal progetto e premere **Crea ISO avviabile**. Il programma conserva l'immagine iniziale del supporto nel progetto, esporta un WIM ottimizzato e ricostruisce la ISO con avvio BIOS/UEFI. La ISO finale viene resa disponibile solo dopo il successo di `oscdimg`.
+
+## Catalogo componenti: comportamento dei pulsanti
+
+- **Ordina:** clic sull'intestazione Tipo, Componente, Stato previsto, Stato immagine o Modifica; secondo clic inverte l'ordine. I nomi con numeri usano ordinamento naturale. Con il raggruppamento attivo, le righe sono ordinate entro il rispettivo tipo; disattivarlo per ordinare l'intero elenco.
+- **Disabilita:** la riga mostra subito **Disabilitato** e **Disabilitazione in attesa**. Lo stato di partenza resta visibile nella colonna Stato immagine. Non esegue manutenzione del Windows corrente.
+- **Rimuovi:** il componente sparisce dall'elenco normale e compare nel piano **Modifiche e ISO**. Il contatore delle rimozioni si aggiorna. Per rivederlo attivare **Mostra rimozioni in attesa**; appare come Rimosso con il contrassegno Rimozione in attesa.
+- **Annulla modifica:** selezionare la riga (anche una rimozione mostrata con la casella) e premere Annulla modifica. In alternativa, nella pagina Modifiche e ISO selezionare l'operazione e premere Annulla selezione. La riga torna al suo stato iniziale.
+- **Cambia scelta:** una scelta successiva sul medesimo componente sostituisce la precedente. Riabilitare una funzionalita originariamente abilitata annulla la disabilitazione; non accoda comandi opposti.
+- **Aggiorna elenco / importa preset:** conserva le modifiche previste. I componenti rimossi restano nascosti anche dopo una nuova lettura. Le identita complete e i metadati sono visibili nei dettagli della selezione.
+- **Applica:** le operazioni completate vengono segnate come Applicata e distinte da quelle ancora in attesa. Dopo un errore, solo i passi completati aggiornano lo stato della vista. Il piano iniziato resta bloccato per evitare modifiche durante la ripresa.
+
+Le rimozioni multiple vengono validate insieme: se la selezione comprende un elemento protetto, non viene accodata una parte della selezione. I gruppi sono intestazioni, non componenti modificabili. Il catalogo e basato sugli inventari Windows supportati; non introduce rimozioni proprietarie di NTLite.
 
 Gli installer post-setup vengono inclusi nel WIM ed eseguiti con privilegi SYSTEM da `SetupComplete.cmd` durante l'installazione. Specificare le opzioni silenziose corrette per ogni produttore; MSI usa già `/qn /norestart`. Gli script CMD/BAT possono eseguire comandi arbitrari: includere solo file revisionati. Alcune licenze OEM disabilitano SetupComplete e alcuni installer richiedono un utente interattivo. Verificare questo flusso in VM. Un `SetupComplete.cmd` preesistente non viene sovrascritto.
 
@@ -71,7 +83,7 @@ Per un montaggio corrotto, usare gli strumenti DISM Microsoft da terminale ammin
 py -3 -m unittest discover -s tests -v
 ```
 
-Sono verificati test di orchestrazione, errori, preset, XML, rimozioni protette e download con rete simulata. Il percorso ISO → modifiche → nuova ISO nei test usa un motore Windows simulato, **non DISM reale**. È stato inoltre verificato il percorso SWM → WIM con wimlib reale su dati di prova e l'apertura della GUI in un display Linux virtuale. Non è stata verificata l'installazione di una ISO Windows né eseguita una compilazione Windows in questa macchina Linux.
+Sono verificati 52 test: orchestrazione, errori, preset, XML, catalogo e stati previsti, rimozioni protette, download con rete simulata e 6 test GUI con clic sui pulsanti. Su Linux senza display i 6 test GUI vengono saltati; nell'ambiente di sviluppo sono stati eseguiti con DISPLAY virtuale. Su Windows vengono eseguiti con Tk. Il percorso ISO → modifiche → nuova ISO nei test usa un motore Windows simulato, **non DISM reale**. È stato inoltre verificato il percorso SWM → WIM con wimlib reale su dati di prova e l'apertura della GUI in un display Linux virtuale. Non è stata verificata l'installazione di una ISO Windows né eseguita una compilazione Windows in questa macchina Linux.
 
 Prima di distribuire una ISO: provare su Windows esportazione, montaggio, inventario, una modifica compatibile, commit e ricostruzione, usando una copia sacrificabile. Avviare il risultato in VM UEFI e BIOS; per preset con partizionamento usare una VM UEFI con un disco virtuale vuoto. Verificare anche OOBE e post-setup. Una build `.exe` riuscita non sostituisce questi controlli.
 

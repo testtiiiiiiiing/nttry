@@ -2,7 +2,7 @@
 
 Riferimento: elenco fornito dall'utente dalla pagina https://ntlite.com/features/. La pagina non era leggibile dal proxy della macchina; non è stata verificata direttamente. Questo confronto descrive il codice implementato, non certifica parità con NTLite né compatibilità con tutte le versioni Windows. Le operazioni DISM e Windows Setup necessitano di verifica Windows.
 
-| Funzione richiesta | Implementazione in WinImage Studio 2 | Differenze / lavoro ancora necessario |
+| Funzione richiesta | Implementazione in WinImage Studio 3 | Differenze / lavoro ancora necessario |
 |---|---|---|
 | Image Management: ISO, WIM, ESD, SWM | Importazione ISO; normalizzazione WIM/ESD tramite DISM; SWM tramite wimlib esterno; ricostruzione ISO BIOS/UEFI | GUI centrata sulle ISO; una sola edizione per ISO risultante; nessuna esportazione ESD/SWM del risultato |
 | Deployed Install Editing | Non implementato | Il motore modifica solo copie offline; non fa manutenzione del Windows in esecuzione |
@@ -18,7 +18,7 @@ Riferimento: elenco fornito dall'utente dalla pagina https://ntlite.com/features
 | Power Plan | Importazione file POW e attivazione tramite SetupComplete | Nessun editor dei parametri o gestione del piano energetico del sistema corrente |
 | Post-Setup (add) | EXE/MSI/CMD/BAT con argomenti e payload nell'immagine | Richiede installer silenziosi compatibili con esecuzione SYSTEM |
 | Install Updates Wizard | Coda aggiornamenti nella GUI, applicazione alla copia WIM | Nessun wizard per installare aggiornamenti sul sistema corrente |
-| Components | Rimozioni DISM: pacchetti, Appx provisionate, capabilities e payload features | Non replica la rimozione chirurgica proprietaria di NTLite; le protezioni non sono una matrice completa di compatibilità |
+| Components | Catalogo raggruppabile/ordinabile per tipo, ricerca, stati previsti immediati, rimozioni nascoste e annullabili; rimozioni DISM di pacchetti, Appx, capabilities e payload features | Non replica la rimozione chirurgica proprietaria di NTLite; le protezioni non sono una matrice completa di compatibilità |
 | Remove Reinstalls | Non implementato | StartComponentCleanup non equivale alla gestione proprietaria dei componenti reinstallati |
 | Scheduled Tasks | Comandi enable/disable/delete tramite schtasks in post-setup | Non modifica direttamente il database di attività nell'immagine offline |
 | Settings | Criteri consumer/telemetria, preferenze Explorer/ricerca e valori registro personalizzati | Nessun catalogo equivalente alle migliaia di impostazioni NTLite; effetti dipendenti dall'edizione |
@@ -32,7 +32,7 @@ Riferimento: elenco fornito dall'utente dalla pagina https://ntlite.com/features
 
 ## Validazione disponibile
 
-- Test automatici della logica con DISM, oscdimg e rete simulati.
+- 52 test passati, compresi 6 test GUI con pulsanti reali; DISM, oscdimg e rete restano simulati nei test di orchestrazione.
 - Apertura GUI, schede, coda e round-trip del preset in display virtuale Linux.
 - Conversione SWM/WIM reale con wimlib 1.14.4, verifica integrità e confronto dei dati ripristinati.
 - Build Windows automatizzata configurata in GitHub Actions; l'esito deve essere controllato dopo la pubblicazione.

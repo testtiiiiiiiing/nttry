@@ -25,17 +25,22 @@ def editions(text):
 
 
 def inventory(text, primary, state="State"):
-    entries = []
-    current = None
+    entries, record = [], {}
+    def flush():
+        if primary in record:
+            entries.append({"name": record[primary], "state": record.get(state, ""), "metadata": dict(record)})
+        record.clear()
     for line in text.splitlines():
+        if not line.strip():
+            flush()
+            continue
         if ":" not in line:
             continue
         key, value = (part.strip() for part in line.split(":", 1))
-        if key == primary:
-            current = {"name": value, "state": ""}
-            entries.append(current)
-        elif current is not None and key == state:
-            current["state"] = value
+        if key == primary and primary in record:
+            flush()
+        record[key] = value
+    flush()
     return entries
 
 
